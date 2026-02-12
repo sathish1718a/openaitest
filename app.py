@@ -86,6 +86,7 @@ def chat():
                 messages.pop()
 
     return render_template("index.html", messages=messages, error=error)
+print("CI/CD test deployment")
 
 
 if __name__ == "__main__":
