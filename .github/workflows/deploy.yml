@@ -1,1 +1,40 @@
 
+name: Deploy Chatbot
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Deploy to Ubuntu Server
+      uses: appleboy/ssh-action@v1.0.0
+
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+
+        script: |
+          cd ${{ secrets.APP_DIR }}
+
+          echo "Pull latest code"
+          git pull origin main
+
+          echo "Stop old container"
+          docker stop chatbot || true
+          docker rm chatbot || true
+
+          echo "Build Docker image"
+          docker build -t chatbot .
+
+          echo "Start container"
+          docker run -d -p 5000:5000 --env-file .env --name chatbot chatbot
